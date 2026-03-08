@@ -109,6 +109,11 @@ export function GlobeScene({
   return (
     <Canvas
       className="h-full w-full"
+      fallback={
+        <div className="flex h-full w-full items-center justify-center bg-night-950 text-sm text-slate-200">
+          WebGL indisponivel neste dispositivo.
+        </div>
+      }
       dpr={[1, maxDpr]}
       gl={{ antialias: true, alpha: false }}
       camera={{ position: new Vector3(0, 0, 8.2), fov: 46, near: 0.1, far: 200 }}
