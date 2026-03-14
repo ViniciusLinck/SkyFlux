@@ -1,5 +1,5 @@
 import { Suspense, useMemo, useRef, useState } from 'react'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Stars } from '@react-three/drei'
 import { Color, Vector3 } from 'three'
 import { EARTH_RADIUS_UNITS, UI_LIMITS } from '../constants/config'
@@ -18,16 +18,27 @@ function SceneContent({
   onSelectLaunch,
 }) {
   const earthRef = useRef(null)
-  const { camera } = useThree()
   const [lodMode, setLodMode] = useState(false)
-  const lastDistance = useRef(camera.position.length())
+  const lastDistance = useRef(null)
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock, camera }) => {
     if (earthRef.current) {
       earthRef.current.rotation.y = clock.getElapsedTime() * 0.03
     }
 
-    const distance = camera.position.length()
+    const distance =
+      camera?.position && typeof camera.position.length === 'function'
+        ? camera.position.length()
+        : null
+
+    if (distance == null || !Number.isFinite(distance)) return
+
+    if (lastDistance.current == null) {
+      lastDistance.current = distance
+      setLodMode(distance > UI_LIMITS.lodSwitchDistance)
+      return
+    }
+
     if (Math.abs(distance - lastDistance.current) > 0.2) {
       lastDistance.current = distance
       setLodMode(distance > UI_LIMITS.lodSwitchDistance)
